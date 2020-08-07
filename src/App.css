@@ -25,21 +25,6 @@ body {
       
   }
 
-  .Nav__navBar___xtCFA {
-      background-color: white;
-      box-shadow: 1px 1px 9px 7px #36181833;
-  }
-
-  .Nav__navItem___1LtFQ {
-    font-size: 200%;
-  }
-  
-  .Nav__navBar___xtCFA button {
-    margin-top: -65px;
-    float: right;
-    width: 20%;
-}
-
   .container {
     padding: 0 1rem;
     text-align: right;
@@ -215,17 +200,6 @@ body {
   }
   
   @media (max-width: 576px) {
-    .Nav__navItem___1LtFQ {
-        font-size: 100%;
-    }
-
-    .Nav__navBar___xtCFA button {
-        margin-top: -65px;
-        float: right;
-        width: 40%;
-        font-size: 90%;
-    }
-
     .comment-box {
         width: 75%;
         border: 1px solid #cccccc;
