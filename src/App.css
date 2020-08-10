@@ -8,7 +8,7 @@ body {
     -moz-osx-font-smoothing: grayscale;
     color: #282c34;
   }
-  
+
   code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
       monospace;
@@ -23,6 +23,26 @@ body {
       box-shadow: 1px 1px 9px 7px #36181833;
       color: #282c34
       
+  }
+
+  .header {
+      /* color: white; */
+      background-color: white;
+      margin: 0;
+      margin-bottom: .5em;
+      padding: 1em;
+      text-align: center;
+  }
+
+  .header h1 {
+      font-size: 300%;
+      color: black;
+      margin-top: 0px;
+      margin-bottom: 0px;
+      /* -webkit-text-stroke: 2px black; */
+      letter-spacing: 5px;
+      /* text-shadow: 3px 3px 20px #ff99cc,
+      -2px 1px 30px #ff99cc; */
   }
 
   .container {
@@ -157,6 +177,19 @@ body {
     cursor: pointer;
     margin-top: 15px;
   }
+
+  .comment time {
+      display: inline-block;
+  }
+
+  .delete-comment {
+    margin-top: -3px;
+    margin-bottom: 0em;
+    padding: .2rem;
+    display: inline-block;
+    width: 28px;
+    border-radius: 150px;
+  }
   
   .users-liked {
     width: 100px;
@@ -207,5 +240,11 @@ body {
 
     .post-box {
           border: 1px solid #cccccc;
+    }
+
+    .delete-comment {
+        padding: .2rem;
+        width: 28px;
+        margin-top: -20px;
     }
   }

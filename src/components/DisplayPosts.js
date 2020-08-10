@@ -1,25 +1,23 @@
 import React, { Component } from 'react';
 import { listPosts } from '../graphql/queries';
 import { API, graphqlOperation, Auth } from 'aws-amplify';
-import { FaThumbsUp, FaSadTear } from 'react-icons/fa';
 
 import DeletePost from './DeletePost';
 import EditPost from './EditPost';
 import CreateCommentPost from './CreateCommentPost';
 import CommentPost from './CommentPost';
-import UsersWhoLikedPost from './UsersWhoLikedPost';
-import { createLike } from '../graphql/mutations';
-import { onCreatePost, onDeletePost, onUpdatePost, onCreateComment, onCreateLike } from '../graphql/subscriptions';
+import LikeButton from './LikeButton';
+import { onCreatePost, onDeletePost, onUpdatePost, onCreateComment, onCreateLike, onDeleteComment } from '../graphql/subscriptions';
+
 
 class DisplayPosts extends Component {
-
-    state = {
-        ownerId: "",
-        ownerUsername: "",
-        errorMessage: "",
-        postLikedBy: [],
-        isHovering: false,
-        posts: []
+    constructor(props) {
+        super(props);
+        this.state = {
+            ownerId: "",
+            ownerUsername: "",
+            posts: []
+        }
     }
     
     componentDidMount = async () => {
@@ -82,6 +80,20 @@ class DisplayPosts extends Component {
             }
         })
 
+        this.deletePostCommentListener = API.graphql(graphqlOperation(onDeleteComment))
+        .subscribe({
+            next: commentData => {
+                const deletedComment = commentData.value.data.onDeleteComment
+                const posts = [...this.state.posts]
+                for(let post of posts) {
+                    if(post.id === deletedComment.post.id) {
+                        post.comments.items = post.comments.items.filter(item => item.id !== deletedComment.id)
+                    }
+                }
+                this.setState({ posts })
+            }
+        })
+
         this.createPostLikeListener = API.graphql(graphqlOperation(onCreateLike))
         .subscribe({
             next: postData => {
@@ -95,6 +107,7 @@ class DisplayPosts extends Component {
                 this.setState({ posts })
             }
         })
+
     }
 
     componentWillUnmount() {
@@ -102,6 +115,7 @@ class DisplayPosts extends Component {
         this.DeletePostListener.unsubscribe();
         this.updatePostListener.unsubscribe();
         this.createPostCommentListener.unsubscribe();
+        this.deletePostCommentListener.unsubscribe();
         this.createPostLikeListener.unsubscribe();
     }
     
@@ -110,59 +124,11 @@ class DisplayPosts extends Component {
         this.setState({ posts: result.data.listPosts.items })
     }
 
-    likedPost = (postId) => {
-        for (let post of this.state.posts) {
-            if (post.id === postId) {
-                if (post.postOwnerId === this.state.ownerId) return true
-                for (let like of post.likes.items) {
-                    if (like.likeOwnerId === this.state.ownerId) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    handleLike = async postId => {
-        if (this.likedPost(postId)) {return this.setState({errorMessage: "Can't like your own post"})} {
-            const input = {
-                numberLikes: 1,
-                likeOwnerId: this.state.ownerId,
-                likeOwnerUsername: this.state.ownerUsername,
-                likePostId: postId
-            }
-            try {
-                const result = await API.graphql(graphqlOperation(createLike, {input}))
-                console.log("Liked: ", result.data);
-            } catch(error) {
-                console.log(error)
-            } 
-        }
-    }
-
-    handleMouseHover = async postId => {
-        this.setState({ isHovering: !this.state.isHovering })
-        let innerLikes = this.state.postLikedBy
-        for (let post of this.state.posts) {
-            if (post.id === postId) {
-                for (let like of post.likes.items) {
-                    innerLikes.push(like.likeOwnerUsername)
-                }
-            }
-            this.setState({postLikedBy: innerLikes})
-        }
-        console.log("Post liked by: ", this.state.postLikedBy);
-    }
-
-    handleMouseHoverLeave = async () => {
-        this.setState({ isHovering: !this.state.isHovering })
-        this.setState({ postLikedBy: [] })
-    }
-
     render() {
         const { posts } = this.state
-
+        posts.sort((a,b) => (b.createdAt > a.createdAt) ? 1 : ((a.createdAt > b.createdAt) ? -1 : 0));
+        const { ownerId } = this.state
+        const { ownerUsername } = this.state
         let loggedInUser = this.state.ownerId
         return posts.map(( post ) => {
             return(
@@ -174,7 +140,7 @@ class DisplayPosts extends Component {
                         {" on "}
                         <time style={{ fontStyle: "italic" }}>
                             {" "}
-                            { new Date (post.createdAt).toDateString() }
+                            { new Date (post.createdAt).toLocaleString() }
 
                         </time>
                     </span>
@@ -188,30 +154,15 @@ class DisplayPosts extends Component {
                             <EditPost {...post}/>
                         }
                         <span>
-                            <p className="alert">{post.postOwnerId === loggedInUser && this.state.errorMessage}</p>
-                            <p 
-                                className="like-button"
-                                style={{ color: (post.likes.items.length > 0) ? "blue" : "grey" }}
-                                onMouseEnter={ () => this.handleMouseHover(post.id) }
-                                onMouseLeave={ () => this.handleMouseHoverLeave() }
-                                onClick={ () => this.handleLike(post.id) }>
-                                <FaThumbsUp />
-                                {post.likes.items.length}
-                            </p>
-                            {
-                                this.state.isHovering &&
-                                <div className="users-liked">
-                                    {this.state.postLikedBy.length === 0 ? "Liked by no one " : "Liked by: "}
-                                    {this.state.postLikedBy.length === 0 ? <FaSadTear /> : <UsersWhoLikedPost data={this.state.postLikedBy}/>}
-                                </div>
-                            }
+                            <LikeButton post={post} posts={posts} loggedInUser={loggedInUser} ownerId={ownerId} ownerUsername={ownerUsername} />
                         </span>
                     </span>
                     <span>
                         <CreateCommentPost postId={post.id}/>
                         { post.comments.items.length > 0 && <span style={{ fontSize: "19px", color: "grey" }}>Comments: </span> }
                         {
-                            post.comments.items.map((comment, index) => <CommentPost key={index}  commentData={comment}/>)
+                            post.comments.items.sort((a,b) => (a.createdAt > b.createdAt) ? 1 : ((b.createdAt > a.createdAt) ? -1 : 0))
+                            .map((comment, index) => <CommentPost key={index}  commentData={comment} loggedInUser={loggedInUser}/>)
                         }
                     </span>
                 </div>

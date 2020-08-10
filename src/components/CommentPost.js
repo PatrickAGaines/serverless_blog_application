@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
+import DeleteComment from './DeleteComment';
 
 class CommentPost extends Component {
 
     render() {
-        const { content, commentOwnerUsername, createdAt } = this.props.commentData
+        const { content, commentOwnerUsername, createdAt, id, commentOwnerId } = this.props.commentData
+        const { loggedInUser } = this.props
         return(
             <div className="comment">
                 <span style={{ fontStyle: "italic", color: "#0ca5e297"}}>
@@ -11,10 +13,15 @@ class CommentPost extends Component {
                     {" on "}
                     <time style={{ fontStyle: "italic" }}>
                         { " " }
-                        { new Date(createdAt).toDateString() }
+                        { new Date(createdAt).toLocaleString() }
                     </time>
+                    {commentOwnerId === loggedInUser &&
+                    <DeleteComment commentId={id} />
+                }
                 </span>
+                <span>
                 <p>{ content }</p>
+                </span>
             </div>
         )
     }

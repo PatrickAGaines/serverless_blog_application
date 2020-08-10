@@ -6,8 +6,8 @@ class UsersWhoLikedPost extends Component {
         const allUsers = this.props.data
         return allUsers.map((user) => {
             return(
-            <Fragment>
-                <div key={user}>
+            <Fragment key={user}>
+                <div>
                     <span style={{ fontWeight: "bold", color: "#ged" }}>
                         {user}
                     </span>

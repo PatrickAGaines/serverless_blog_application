@@ -3,17 +3,19 @@ import { Auth, API, graphqlOperation } from 'aws-amplify';
 import { updatePost } from '../graphql/mutations';
 
 class EditPost extends Component {
-
-    state = {
-        show: false,
-        id: "",
-        postOwnerId: "",
-        postOwnerUsername: "",
-        postTitle: "",
-        postBody: "",
-        postData: {
-            postTitle: this.props.postTitle,
-            postBody: this.props.postBody
+    constructor(props) {
+        super(props);
+        this.state = {
+            show: false,
+            id: "",
+            postOwnerId: "",
+            postOwnerUsername: "",
+            postTitle: "",
+            postBody: "",
+            postData: {
+                postTitle: this.props.postTitle,
+                postBody: this.props.postBody
+            }
         }
     }
 
